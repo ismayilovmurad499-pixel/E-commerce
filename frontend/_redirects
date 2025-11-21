@@ -1,1 +1,10 @@
-/* /index.html 200
+[build]
+  # Frontend klasörünüzde çalıştırılacak derleme komutu
+  command = "npm install --prefix frontend && npm run build --prefix frontend"
+  # Derlenmiş dosyaların yolu (örneğin Vite kullanıyorsanız dist)
+  publish = "frontend/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
