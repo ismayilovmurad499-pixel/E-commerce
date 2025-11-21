@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Product from '../components/Product';
+import Sever from './Sever';
+import Testimonials from './Testimonials';
 
 const Introduction = () => {
-
   const [currentSlide, setCurrentSlide] = useState(0);
-  // YENİ: "What's New" hissəsi üçün state
-  const [activeTab, setActiveTab] = useState('Phones');
+  // YENİ: İlk açılanda 'All Products' seçili olsun
+  const [activeTab, setActiveTab] = useState('All Products');
 
   const slides = [
     {
@@ -34,14 +35,14 @@ const Introduction = () => {
     }
   ];
 
-  // YENİ: Kateqoriyalar siyahısı
-  const categories = ['Phones', 'Cameras', 'Laptop'];
+  // YENİ: "All Products" əlavə edildi
+  const categories = ['All Products', 'Phones', 'Cameras', 'Laptops'];
 
   const goToSlide = (index) => {
     setCurrentSlide(index);
   };
 
-  // Auto-play functionality - hər 5 saniyədə avtomatik dəyişir
+  // Auto-play functionality
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -176,7 +177,7 @@ const Introduction = () => {
         `}</style>
       </section>
 
-      {/* ------------ YENİ HİSSƏ BAŞLANĞICI (WHAT'S NEW) ------------ */}
+      {/* ------------ WHAT'S NEW HİSSƏSİ ------------ */}
       <div className="w-full py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center gap-8">
           {/* Başlıq */}
@@ -204,10 +205,13 @@ const Introduction = () => {
           </div>
         </div>
       </div>
-      {/* ------------ YENİ HİSSƏ SONU ------------ */}
 
       {/* Product komponentinə seçilmiş kateqoriyanı ötürürük */}
-      <Product category={activeTab} />
+      {/* Əgər "All Products" seçilibsə, category prop-u göndərmə (bütün məhsullar görsənsin) */}
+      <Product category={activeTab === 'All Products' ? null : activeTab} />
+
+      <Sever/>
+      <Testimonials/>
     </>
   );
 };

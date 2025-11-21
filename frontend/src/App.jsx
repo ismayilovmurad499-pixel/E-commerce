@@ -32,6 +32,8 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Computers from './components/Computer'
 import PaymentComponent from './components/PaymentComponent'
+import Sever from './components/Sever'
+import Testimonials from './components/Testimonials'
 
 function App() {
   return (
@@ -63,6 +65,8 @@ function App() {
       <Route path="/about" element={<About/>} />
       <Route path="/contact" element={<Contact/>} />
       <Route path="/payment" element={<PaymentComponent/>} />
+      <Route path="/sever" element={<Sever/>} />
+      <Route path="/Testimonials" element={<Testimonials/>} />
       <Route path="/password/reset/:token" element={<ResetPassword />} />
 
 
