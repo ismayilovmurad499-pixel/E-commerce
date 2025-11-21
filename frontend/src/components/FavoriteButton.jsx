@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
-import { useGetFavoritesQuery, useRemoveFromFavoritesMutation } from "../redux/api/productsApi"
+import { useGetFavoritesQuery, useRemoveFromFavoritesMutation, productApi } from "../redux/api/productsApi"
 import { Link } from "react-router-dom"
 import { toast } from "react-toastify"
-import { productApi } from "../redux/api/productsApi"
+import { Heart, Trash2, ShoppingBag, ArrowRight, AlertCircle, ShoppingCart, ArrowLeft } from "lucide-react"
 
-const FavoriteButton = () => {
+const FavoriteButton = () => { // Qeyd: Komponentin adı "FavoritesPage" olsa daha uyğun olar, amma sizin kodunuz pozulmasın deyə saxladım.
   const dispatch = useDispatch()
   const {
     data: favoriteData,
@@ -25,43 +25,47 @@ const FavoriteButton = () => {
     }
   }, [favoriteData])
 
-  const handleRemoveFromFavorites = async (productId) => {
+  const handleRemoveFromFavorites = async (e, productId) => {
+    e.preventDefault(); // Link-ə keçidin qarşısını almaq üçün
     try {
       await removeFromFavorites(productId).unwrap()
       setLocalFavorites((prev) => prev.filter((item) => item._id !== productId))
       toast.success("Məhsul favorilərdən silindi")
-
-      // Invalidate the cache for favorites
       dispatch(productApi.util.invalidateTags(["Favorites"]))
-
-      // Refetch the favorites
       await refetch()
     } catch (error) {
-      toast.error("Məhsul silinərkən xəta baş verdi")
+      toast.error("Xəta baş verdi")
     }
   }
 
+  // Loading Ekranı
   if (isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-indigo-600 to-purple-700">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-white"></div>
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600 mb-4"></div>
+        <p className="text-gray-500 font-medium">Favorilər yüklənir...</p>
       </div>
     )
   }
 
+  // Boş Səhifə Ekranı
   if (!localFavorites || localFavorites.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900 text-white py-12">
-        <div className="text-center space-y-6">
-          <i className="fas fa-heart text-6xl text-gray-400"></i>
-          <h2 className="text-4xl font-extrabold text-gray-200">Favori Siyahınız Boşdur</h2>
-          <p className="text-xl text-gray-400">Hələ heç bir məhsul əlavə etməmisiniz.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center max-w-md w-full bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
+          <div className="bg-red-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Heart className="w-12 h-12 text-red-500 fill-red-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Favoriləriniz Boşdur</h2>
+          <p className="text-gray-500 mb-8 leading-relaxed">
+            Bəyəndiyiniz məhsulları yadda saxlamaq üçün ürək ikonuna klikləyin.
+          </p>
           <Link
             to="/shop"
-            className="inline-flex items-center justify-center bg-gradient-to-r from-pink-500 to-red-600 text-white px-8 py-4 rounded-lg hover:scale-105 hover:shadow-2xl transition-all duration-300 ease-out"
+            className="inline-flex items-center justify-center w-full bg-gray-900 text-white px-6 py-4 rounded-xl text-lg font-semibold hover:bg-gray-800 transition-all shadow-lg hover:shadow-gray-300"
           >
-            <i className="fas fa-shopping-bag mr-2"></i>
-            Alış-verişə Başla
+            <ShoppingBag className="mr-2 w-5 h-5" />
+            Mağazaya Keç
           </Link>
         </div>
       </div>
@@ -69,78 +73,97 @@ const FavoriteButton = () => {
   }
 
   return (
-    <section className="bg-gradient-to-b from-gray-100 to-gray-300 py-12 min-h-screen">
+    <section className="bg-gray-50 min-h-screen py-12 font-sans">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Favori Məhsullarım
-            <span className="ml-2 text-2xl text-gray-600">({localFavorites.length} məhsul)</span>
-          </h2>
+        
+        {/* Başlıq Hissəsi */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+              Favorilər <Heart className="text-red-500 fill-red-500 w-8 h-8" />
+            </h1>
+            <p className="text-gray-500 mt-2 text-lg">
+              Siyahınızda <span className="font-bold text-gray-900">{localFavorites.length}</span> məhsul var
+            </p>
+          </div>
+          
           <Link
-            to="/"
-            className="text-blue-600 hover:text-blue-800 font-medium flex items-center transform transition-all duration-300 ease-out hover:scale-105"
+            to="/shop"
+            className="group flex items-center text-indigo-600 font-semibold hover:text-indigo-800 transition-colors"
           >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Alış-verişə Davam Et
+            <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Alış-verişə davam et
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Grid Sistemi */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {localFavorites.map((product) => (
-            <div
+            <Link 
+              to={`/product/${product._id}`} 
               key={product._id}
-              className="group relative bg-white rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-700 ease-in-out overflow-hidden transform hover:scale-105"
+              className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
             >
-              <div className="relative">
-                <Link to={`/product/${product._id}`}>
-                  <img
-                    src={product.images?.[0]?.url || "/default-product.jpg"}
-                    alt={product.name}
-                    className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
-                    onError={(e) => {
-                      e.target.onerror = null
-                      e.target.src = "/default-product.jpg"
-                    }}
-                  />
-                </Link>
+              {/* Şəkil Sahəsi */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                <img
+                  src={product.images?.[0]?.url || "/default-product.jpg"}
+                  alt={product.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                
+                {/* Silmə Düyməsi (Absolute) */}
                 <button
-                  onClick={() => handleRemoveFromFavorites(product._id)}
-                  className="absolute top-3 right-3 p-4 bg-gradient-to-r from-red-500 to-red-700 text-white rounded-full shadow-xl hover:bg-red-600 hover:scale-110 transition-all duration-300"
+                  onClick={(e) => handleRemoveFromFavorites(e, product._id)}
+                  className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm text-gray-400 rounded-full shadow-sm hover:bg-red-50 hover:text-red-500 transition-all duration-200 z-10"
+                  title="Favorilərdən sil"
                 >
-                  <i className="fas fa-trash-alt"></i>
+                  <Trash2 className="w-5 h-5" />
                 </button>
-                {product.stock < 5 && (
-                  <div className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-yellow-300 to-yellow-600 text-white rounded-full text-sm font-semibold shadow-xl transform translate-y-2 group-hover:translate-y-0">
-                    Son {product.stock} ədəd
+
+                {/* Stok Badge */}
+                {product.stock < 5 && product.stock > 0 && (
+                  <div className="absolute top-3 left-3 px-3 py-1 bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full flex items-center shadow-sm">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Son {product.stock}
+                  </div>
+                )}
+                 {product.stock === 0 && (
+                  <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
+                     <span className="bg-gray-900 text-white px-4 py-1 rounded-full text-sm font-bold">Bitib</span>
                   </div>
                 )}
               </div>
 
-              <div className="p-6 bg-gradient-to-b from-white to-gray-50 rounded-b-3xl">
-                <Link to={`/product/${product._id}`}>
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-3 hover:text-indigo-500 transition-all duration-300 ease-in-out line-clamp-2">
+              {/* Məlumat Sahəsi */}
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
                     {product.name}
                   </h3>
-                </Link>
-                <div className="flex items-center justify-between mt-4">
-                  <div>
-                    <p className="text-2xl font-bold text-gradient text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-700">
+                  
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-xl font-extrabold text-indigo-600">
                       {product.price.toFixed(2)} ₼
-                    </p>
+                    </span>
                     {product.oldPrice && (
-                      <p className="text-sm text-gray-600 line-through">{product.oldPrice.toFixed(2)} ₼</p>
+                      <span className="text-sm text-gray-400 line-through decoration-gray-400">
+                        {product.oldPrice.toFixed(2)} ₼
+                      </span>
                     )}
                   </div>
-                  <Link
-                    to={`/product/${product._id}`}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-lg shadow-lg transform transition-all duration-300 ease-out hover:bg-blue-600 hover:scale-105"
-                  >
-                    <span>Ətraflı</span>
-                    <i className="fas fa-arrow-right ml-2"></i>
-                  </Link>
+                </div>
+
+                {/* Aksiyon Düyməsi */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <button className="w-full py-3 px-4 bg-gray-50 hover:bg-indigo-600 hover:text-white text-gray-900 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span>Məhsula Bax</span>
+                    <ArrowRight className="w-4 h-4 opacity-0 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                  </button>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -149,4 +172,3 @@ const FavoriteButton = () => {
 }
 
 export default FavoriteButton
-

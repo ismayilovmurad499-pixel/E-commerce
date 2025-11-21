@@ -117,12 +117,6 @@ const Navbar = () => {
               <Link to="/" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
                 DEMO
               </Link>
-              
-              <div className="relative group">
-                <Link to="/shop" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
-                  FEATURES
-                </Link>
-              </div>
 
               <Link to="/shop" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
                 SHOP
@@ -132,11 +126,11 @@ const Navbar = () => {
                 PRODUCT
               </Link>
 
-              <Link to="/blog" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
+              <Link to="/Blog" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
                 BLOG
               </Link>
 
-              <Link to="/pages" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
+              <Link to="/contact" className="text-sm font-medium text-black hover:text-gray-600 transition-colors tracking-wide uppercase">
                 PAGES
               </Link>
             </div>

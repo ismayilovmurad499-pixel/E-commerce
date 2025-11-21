@@ -34,7 +34,7 @@ import Computers from './components/Computer'
 import PaymentComponent from './components/PaymentComponent'
 import Sever from './components/Sever'
 import Testimonials from './components/Testimonials'
-
+import Blog from './components/Blog'
 function App() {
   return (
     <>
@@ -67,6 +67,7 @@ function App() {
       <Route path="/payment" element={<PaymentComponent/>} />
       <Route path="/sever" element={<Sever/>} />
       <Route path="/Testimonials" element={<Testimonials/>} />
+      <Route path="/Blog" element={<Blog/>} />
       <Route path="/password/reset/:token" element={<ResetPassword />} />
 
 

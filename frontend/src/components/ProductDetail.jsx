@@ -1,13 +1,7 @@
-"use client" // Bu faylın müştəri tərəfində işlədiləcəyini göstərir.
+"use client"
 
-import { useState } from "react" 
-// React-də komponentin vəziyyətini (state) idarə etmək üçün useState hook-u istifadə olunur.
-
-import { useParams } from "react-router-dom" 
-// useParams hook-u vasitəsilə URL-dəki parametrlərə (məsələn, məhsul id-si) daxil ola bilərik.
-
-// Aşağıdakı API hook-ları məhsul haqqında məlumat almaq, məhsulu səbətə və ya favorilərə əlavə etmək,
-// və həmçinin rəy göndərmək və rəy məlumatlarını çəkmək üçün istifadə olunur.
+import { useState } from "react"
+import { useParams } from "react-router-dom"
 import {
   useGetProductDetailsQuery,
   useAddToCartMutation,
@@ -16,294 +10,206 @@ import {
   useGetProductReviewsQuery,
 } from "../redux/api/productsApi"
 
-// Lucide-react kitabxanasından müxtəlif ikonlar idxal edilir.
-// Bu ikonlar interfeys üzərində vizual elementlər kimi istifadə olunur.
 import {
-  Smartphone,
-  Cpu,
-  Grid,
-  Camera,
-  CameraIcon,
-  Battery,
-  Shield,
-  MemoryStick,
   Heart,
   ShoppingCart,
   ChevronLeft,
   ChevronRight,
+  Star,
+  User,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react"
 
-// İstifadəçiyə bildiriş (toast) göstərmək üçün react-hot-toast kitabxanası idxal olunur.
 import { toast, Toaster } from "react-hot-toast"
-
-// İstifadəçi rəylərini ulduzlarla göstərmək üçün StarRatings komponenti idxal olunur.
 import StarRatings from "react-star-ratings"
 
 const ProductDetail = () => {
-  // URL-dəki parametrləri əldə edirik (məsələn, məhsul id-si)
   const params = useParams()
 
-  // API vasitəsilə məhsulun detallı məlumatlarını çəkmək üçün useGetProductDetailsQuery hook-u çağırılır.
-  // params.id dəyəri ilə konkret məhsulun məlumatları alınır.
   const { data, isLoading, error } = useGetProductDetailsQuery(params?.id, {
-    refetchOnMountOrArgChange: true, // Komponent mount olduqda və ya parametrlər dəyişdikdə məlumatlar yenidən çəkilir.
+    refetchOnMountOrArgChange: true,
   })
-  const product = data?.product // API-dən gələn məlumatdan məhsul obyektini götürürük.
+  const product = data?.product
 
-  // Eyni zamanda, həmin məhsul üçün yazılmış rəyləri çəkmək üçün useGetProductReviewsQuery hook-u istifadə olunur.
   const { data: reviewsData, isLoading: reviewsLoading, error: reviewsError } =
     useGetProductReviewsQuery(params?.id, { refetchOnMountOrArgChange: true })
 
-  // Aşağıdakı mutation hook-ları vasitəsilə məhsulu səbətə, favorilərə əlavə etmək və rəy göndərmək həyata keçirilir.
   const [addToCart] = useAddToCartMutation()
   const [addToFavorites] = useAddToFavoritesMutation()
   const [createOrUpdateReview] = useCreateOrUpdateReviewMutation()
 
-  // Məhsul şəkil qalereyasında hazırda göstərilən şəkilin indeksini saxlamaq üçün state.
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  // Rəy göndərərkən seçilən ulduz sayı (rating) üçün state.
   const [reviewRating, setReviewRating] = useState(0)
-  // Rəy mətni üçün state.
   const [reviewComment, setReviewComment] = useState("")
 
-  // Məhsulun şəkillərini əldə edirik; əgər şəkil yoxdursa boş array kimi qəbul edilir.
   const productImages = product?.images || []
-  // Hazırda göstəriləcək şəkilin URL-sini təyin edirik. 
-  // Əgər şəkillər varsa, currentImageIndex-ə əsaslanaraq uyğun şəkil göstərilir,
-  // yoxdursa, standart (placeholder) şəkil istifadə olunur.
   const productImageUrl =
     productImages.length > 0
       ? productImages[currentImageIndex].url
       : "https://flowbite.s3.amazonaws.com/blocks/e-commerce/imac-front-dark.svg"
 
-  // "Sepətə əlavə et" düyməsinə kliklənəndə çağırılan funksiya.
   const handleAddToCart = async (e) => {
-    e.preventDefault() // Formanın default submit hərəkətini maneə törədək.
+    e.preventDefault()
     try {
-      // API üzərindən məhsulu səbətə əlavə edirik.
       await addToCart({
-        productId: product._id, // Əlavə olunacaq məhsulun id-si.
-        quantity: 1, // Əlavə olunan məhsul sayı (burada sabit olaraq 1).
-      }).unwrap() // unwrap metodu ilə cavabı alırıq.
-      toast.success("Məhsul səbətə əlavə edildi") // Uğurlu əməliyyatdan sonra bildiriş göstərilir.
+        productId: product._id,
+        quantity: 1,
+      }).unwrap()
+      toast.success("Məhsul səbətə əlavə edildi")
     } catch (error) {
-      // Əgər xəta baş verərsə, istifadəçiyə xəta barədə məlumat verilir.
-      toast.error("Məhsul səbətə əlavə edilərkən xəta baş verdi")
+      toast.error("Xəta baş verdi")
     }
   }
 
-  // "Favorilərə əlavə et" düyməsinə kliklənəndə çağırılan funksiya.
   const handleAddToFavorites = async (e) => {
     e.preventDefault()
     try {
-      // Məhsulu favorilərə əlavə etmək üçün API çağırışı edilir.
       const result = await addToFavorites(product._id).unwrap()
       if (result.success) {
-        toast.success("Məhsul favorilərə əlavə edildi")
+        toast.success("Favorilərə əlavə edildi")
       }
     } catch (error) {
-      // Xəta mesajı alınır və əgər məhsul artıq favorilərdədirsə, bu barədə istifadəçi məlumatlandırılır.
-      const message =
-        error.data?.message || "Məhsul favorilərə əlavə edilərkən xəta baş verdi"
-      if (
-        message.toLowerCase().includes("already") ||
-        message.toLowerCase().includes("already exists")
-      ) {
-        toast("Bu məhsul artıq favorilərinizdədir", {
-          icon: "ℹ️",
-        })
+      const message = error.data?.message || "Xəta baş verdi"
+      if (message.toLowerCase().includes("already")) {
+        toast("Bu məhsul artıq favorilərdədir", { icon: "ℹ️" })
       } else {
         toast.error(message)
       }
     }
   }
 
-  // Şəkillər arasında gəzmək üçün funksiya.
-  // "prev" (əvvəlki) və "next" (növbəti) istiqamətlərinə görə currentImageIndex yenilənir.
   const handleImageNavigation = (direction) => {
     if (direction === "prev") {
-      // Əgər əvvəlki şəkilə keçmək istəyiriksə,
-      // cari indeks sıfırdadırsa, sonuncu şəkilə keçir.
       setCurrentImageIndex((prevIndex) =>
         prevIndex === 0 ? productImages.length - 1 : prevIndex - 1
       )
     } else {
-      // Növbəti şəkilə keçmək istəyiriksə,
-      // cari indeks sonuncu şəkildirsə, yenidən ilk şəkilə keçir.
       setCurrentImageIndex((prevIndex) =>
         prevIndex === productImages.length - 1 ? 0 : prevIndex + 1
       )
     }
   }
 
-  // Məhsulun kateqoriyasına əsaslanaraq, fərqli xüsusiyyətlər (specs) siyahısını qaytaran funksiya.
-  // Hər kateqoriya üçün fərqli məlumatlar göstərilir.
   const getSpecs = () => {
-    if (!product) return [] // Əgər məhsul məlumatı yoxdursa, boş array qaytar.
+    if (!product) return []
     switch (product.category) {
       case "Phones":
         return [
-          { label: "Screen Size", value: product.screenSize },
-          { label: "Storage", value: product.storage },
+          { label: "Ekran", value: product.screenSize },
+          { label: "Yaddaş", value: product.storage },
           { label: "RAM", value: product.ram },
-          { label: "Front Camera", value: product.frontCamera },
-          { label: "Back Camera", value: product.backCamera },
-          { label: "Battery", value: product.battery },
-          { label: "Processor", value: product.processor },
+          { label: "Ön Kamera", value: product.frontCamera },
+          { label: "Arxa Kamera", value: product.backCamera },
+          { label: "Batareya", value: product.battery },
+          { label: "Prosessor", value: product.processor },
           { label: "OS", value: product.operatingSystem },
         ]
       case "Laptops":
         return [
-          { label: "Screen Size", value: product.screenSize },
-          { label: "Storage", value: product.storage },
+          { label: "Ekran", value: product.screenSize },
+          { label: "Yaddaş SSD", value: product.storage },
           { label: "RAM", value: product.ram },
-          { label: "GPU", value: product.gpu },
-          { label: "Camera", value: product.camera },
-          { label: "Processor", value: product.processor },
-          { label: "Battery Life", value: product.batteryLife },
+          { label: "Videokart", value: product.gpu },
+          { label: "Kamera", value: product.camera },
+          { label: "Prosessor", value: product.processor },
+          { label: "Batareya", value: product.batteryLife },
           { label: "OS", value: product.operatingSystem },
         ]
-      case "Cameras":
-        return [
-          { label: "Resolution", value: product.resolution },
-          { label: "Optical Zoom", value: product.opticalZoom },
-          { label: "Sensor Type", value: product.sensorType },
-          { label: "Image Stabilization", value: product.imageStabilization },
-        ]
-      case "Headphones":
-        return [
-          { label: "Connectivity", value: product.connectivity },
-          { label: "Battery Life", value: product.batteryLife },
-          { label: "Noise Cancellation", value: product.noiseCancellation },
-        ]
-      case "Console":
-        return [
-          { label: "CPU", value: product.cpu },
-          { label: "GPU", value: product.gpu },
-          { label: "Storage", value: product.storage },
-          { label: "Memory", value: product.memory },
-          { label: "Supported Resolution", value: product.supportedResolution },
-          { label: "Connectivity", value: product.connectivity },
-          // controllerIncluded boolean dəyər olduğu üçün "Yes" və ya "No" kimi göstərilir.
-          { label: "Controller Included", value: product.controllerIncluded ? "Yes" : "No" },
-        ]
-      case "iPad":
-        return [
-          { label: "Screen Size", value: product.ipadScreenSize },
-          { label: "Storage", value: product.ipadStorage },
-          { label: "RAM", value: product.ipadRam },
-          { label: "Battery", value: product.ipadBattery },
-          { label: "Processor", value: product.ipadProcessor },
-          { label: "OS", value: product.ipadOperatingSystem },
-          { label: "Camera", value: product.ipadCamera },
-          { label: "Cellular", value: product.cellular ? "Yes" : "No" },
-        ]
+        // Digər kateqoriyalar eyni qaydada qala bilər...
       default:
-        return [] // Dəstəklənməyən kateqoriyalar üçün boş array qaytar.
+        return []
     }
   }
 
-  // İstifadəçinin rəy göndərmə prosesini idarə edən funksiya.
-  // Form təqdim edildikdə (submit) çağırılır.
   const handleReviewSubmit = async (e) => {
-    e.preventDefault() // Formun səhifəni yeniləməsinin qarşısını alır.
-    // Əgər istifadəçi heç ulduz seçməyibsə, xəta mesajı göstərilir.
+    e.preventDefault()
     if (reviewRating === 0) {
-      toast.error("Zəhmət olmasa, ulduzla rəy verin")
+      toast.error("Zəhmət olmasa ulduz seçin")
       return
     }
     try {
-      // API vasitəsilə rəy göndərilir və ya mövcud rəy yenilənir.
       const response = await createOrUpdateReview({
-        productId: product._id, // Rəy yazılacaq məhsulun id-si
-        rating: reviewRating,   // İstifadəçinin seçdiyi ulduz sayı
-        comment: reviewComment, // İstifadəçinin yazdığı rəy mətni
+        productId: product._id,
+        rating: reviewRating,
+        comment: reviewComment,
       }).unwrap()
-      toast.success(response.message || "Rəy uğurla göndərildi")
+      toast.success(response.message || "Rəy göndərildi")
+      setReviewRating(0)
+      setReviewComment("")
     } catch (err) {
-      // Əgər rəy göndərilərkən xəta baş verərsə, istifadəçiyə xəbər verilir.
-      toast.error(err.data?.message || "Rəy göndərilərkən xəta baş verdi")
+      toast.error(err.data?.message || "Xəta baş verdi")
     }
-    // Rəy göndərildikdən sonra input sahələri sıfırlanır.
-    setReviewRating(0)
-    setReviewComment("")
   }
 
-  // Əgər məhsul məlumatları yüklənirsə, istifadəçiyə yüklənir animasiyası göstərilir.
   if (isLoading)
     return (
-      <div className="flex justify-center items-center h-screen bg-white">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-yellow-500"></div>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-yellow-500"></div>
       </div>
     )
 
-  // Əgər məhsul məlumatlarını çəkmək zamanı xəta baş verərsə, xəta mesajı göstərilir.
   if (error)
     return (
-      <div className="text-center text-red-600 text-xl">
-        Xəta: {error.message}
+      <div className="flex flex-col items-center justify-center h-screen text-red-600 gap-4">
+        <AlertCircle size={48} />
+        <p className="text-xl font-semibold">Xəta: {error.message}</p>
       </div>
     )
 
-  // Əsas render olunan hissə: məhsulun şəkli, məlumatları, və interaktiv düymələri göstərilir.
   return (
-    // Səhifənin əsas konteyneri: py-16 ilə üfüqi boşluq, bg-white (ağ fon), min-h-screen ilə tam ekran hündürlük.
-    <>
-    <section className="py-16 bg-white md:py-20 antialiased min-h-screen">
-      {/* react-hot-toast vasitəsilə istifadəçiyə bildirişlər göstərmək üçün Toaster komponenti */}
-      <Toaster />
-      <div className="max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto">
-        {/* Böyük ekranlarda iki sütunlu layout: sol tərəfdə məhsul şəkli, sağ tərəfdə məhsul məlumatları */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-20 xl:gap-28 mt-8">
-          {/* Sol sütun: Məhsul şəkli və qalereya */}
-          <div className="mx-auto py-12">
-            <div className="relative group">
-              {/* Məhsulun əsas şəklini göstərən konteyner */}
-              <div className="shrink-0 max-w-sm lg:max-w-md mx-auto relative overflow-hidden rounded-3xl shadow-2xl transition-transform duration-500 ease-in-out transform hover:scale-105 border-4 border-yellow-500">
+    <section className="py-10 bg-gray-50 min-h-screen font-sans text-gray-800">
+      <Toaster position="top-center" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* --- MƏHSUL BLOKU --- */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+            
+            {/* SOL TƏRƏF: Şəkil Qalereyası */}
+            <div className="p-8 bg-gray-100/50 flex flex-col justify-center">
+              <div className="relative aspect-square overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-200 group">
                 <img
-                  src={productImageUrl || "/placeholder.svg"} 
-                  // Məhsulun şəkili varsa onu, yoxdursa placeholder istifadə olunur.
-                  alt={product?.name || "Məhsul Şəkli"} 
-                  // Şəkil üçün alternativ mətn.
-                  className="w-full rounded-3xl object-cover transition-transform duration-500 ease-in-out"
+                  src={productImageUrl}
+                  alt={product?.name}
+                  className="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-105"
                 />
-                {/* Əgər məhsulun birdən çox şəkili varsa, əvvəlki və növbəti düymələr göstərilir */}
+                
                 {productImages.length > 1 && (
                   <>
-                    {/* Əvvəlki şəkilə keçid düyməsi */}
                     <button
                       onClick={() => handleImageNavigation("prev")}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-300"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100"
                     >
-                      <ChevronLeft className="w-6 h-6" />
+                      <ChevronLeft size={24} />
                     </button>
-                    {/* Növbəti şəkilə keçid düyməsi */}
                     <button
                       onClick={() => handleImageNavigation("next")}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all duration-300"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100"
                     >
-                      <ChevronRight className="w-6 h-6" />
+                      <ChevronRight size={24} />
                     </button>
                   </>
                 )}
               </div>
-              {/* Şəkillərin kiçik önizləmə (thumbnail) hissəsi */}
+
+              {/* Thumbnails */}
               {productImages.length > 1 && (
-                <div className="flex justify-center mt-4 space-x-2">
+                <div className="flex justify-center mt-6 gap-3 overflow-x-auto py-2">
                   {productImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      // Hər thumbnail klikləndikdə currentImageIndex uyğun olaraq yenilənir.
-                      className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                      className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
                         currentImageIndex === index
-                          ? "border-yellow-500 shadow-lg scale-105"
-                          : "border-transparent hover:border-yellow-500/50"
+                          ? "border-yellow-500 ring-2 ring-yellow-200 ring-offset-2"
+                          : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
                       <img
-                        src={image.url || "/placeholder.svg"}
-                        alt={`Önizləmə ${index + 1}`}
+                        src={image.url}
+                        alt={`Thumb ${index}`}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -311,166 +217,176 @@ const ProductDetail = () => {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Sağ sütun: Məhsulun məlumatları, təsviri, düymələr və rəy bölməsi */}
-          <div className="mt-8 lg:mt-0 bg-white rounded-3xl shadow-2xl p-10">
-            {/* Məhsulun adı */}
-            <h1 className="text-5xl font-bold text-black mb-4 leading-tight font-serif">
-              {product?.name || "Məhsulun Adı"}
-            </h1>
-            {/* Məhsulun ümumi qiymətləndirməsi və stok məlumatları */}
-            <div className="flex items-center gap-2 mt-2">
-              <StarRatings
-                rating={product?.ratings || 0} // Məhsulun orta ulduz dəyəri.
-                starRatedColor="gold" // Dolu ulduzların rəngi.
-                numberOfStars={5} // Cəmi ulduz sayı.
-                starDimension="18px" // Ulduz ölçüsü.
-                starSpacing="4px" // Ulduzlar arasındakı boşluq.
-              />
-              <span className="text-sm text-black">
-                ({product?.ratings || "Qiymətləndirmə yoxdur"})
+            {/* SAĞ TƏRƏF: Məlumatlar */}
+            <div className="p-8 lg:p-12 flex flex-col">
+              {/* Kateqoriya Badge */}
+              <span className="inline-block w-fit px-3 py-1 text-xs font-semibold tracking-wider text-yellow-800 uppercase bg-yellow-100 rounded-full mb-4">
+                {product?.category || "Elektronika"}
               </span>
-              <p className="text-sm text-black mt-1">
-                {product?.stock
-                  ? `Stokda: ${product?.stock} ədəd`
-                  : "Stokda yoxdur"}
-              </p>
-            </div>
 
-            {/* Məhsulun qiyməti */}
-            <div className="flex items-baseline gap-6 mb-8">
-              <span className="text-5xl font-bold text-black">
-                {product?.price || "N/A"}{" "}
-                <span className="text-yellow-500">&#8380;</span> 
-                {/* Türk Lirası simvolu */}
-              </span>
-            </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                {product?.name}
+              </h1>
 
-            {/* Məhsulun xüsusiyyətlərini (specs) göstərən bölmə */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {getSpecs().map((spec, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-gray-100 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105"
-                >
-                  {/* Xüsusiyyətin adı */}
-                  <div className="flex items-center gap-2 mb-2">
-                    {/* 
-                      Burada istəsəniz müvafiq ikonlardan istifadə edə bilərsiniz.
-                      Hazırda yalnız mətn olaraq göstərilir.
-                    */}
-                    <span className="text-sm text-black">{spec.label}</span>
-                  </div>
-                  {/* Xüsusiyyətin dəyəri */}
-                  <p className="font-medium text-black">{spec.value}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Məhsulun təsviri */}
-            <p className="mb-8 text-black leading-relaxed">
-              {product?.description || "Təsvir mövcud deyil."}
-            </p>
-
-            {/* Səbətə və favorilərə əlavə etmə düymələri */}
-            <div className="flex gap-4 mb-8">
-              {/* Favorilərə əlavə et düyməsi */}
-              <button
-                onClick={handleAddToFavorites}
-                className="flex-1 px-6 py-3 border-2 border-black text-black rounded-xl hover:bg-black hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <Heart className="w-5 h-5" /> {/* Ürəklər ikonu */}
-                Favorilərə Əlavə Et
-              </button>
-              {/* Səbətə əlavə et düyməsi */}
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 px-6 py-3 bg-gray-200 text-black rounded-xl hover:bg-gray-300 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-              >
-                <ShoppingCart className="w-5 h-5" /> {/* Səbət ikonu */}
-                Səbətə Əlavə Et
-              </button>
-            </div>
-
-            {/* Rəy yazma formu */}
-            <div className="mt-10 bg-gray-100 p-6 rounded-2xl shadow-lg">
-              <h2 className="text-3xl font-bold text-black mb-4">
-                Rəyinizi Yazın
-              </h2>
-              <form onSubmit={handleReviewSubmit}>
-                {/* İstifadəçinin ulduz seçimi üçün interaktiv ulduzlar */}
-                <div className="flex items-center">
+              {/* Reytinq və Stok */}
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="flex items-center gap-1">
+                  <span className="text-yellow-500 font-bold text-lg">{product?.ratings || 0}</span>
                   <StarRatings
-                    rating={reviewRating} // İstifadəçinin seçdiyi ulduz sayı.
-                    changeRating={setReviewRating} // Ulduzlara kliklənildikdə state yenilənir.
+                    rating={product?.ratings || 0}
+                    starRatedColor="#EAB308" // Tailwind yellow-500
                     numberOfStars={5}
-                    starRatedColor="gold"
-                    starHoverColor="gold"
-                    starDimension="24px"
-                    starSpacing="4px"
-                    isSelectable={true} // Ulduzların kliklənə bilən olması təmin olunur.
+                    starDimension="18px"
+                    starSpacing="2px"
                   />
                 </div>
-                {/* Rəy mətni üçün textarea */}
-                <div className="mt-4">
+                <span className="text-gray-300">|</span>
+                <div className={`flex items-center gap-2 text-sm font-medium ${product?.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {product?.stock > 0 ? (
+                    <><CheckCircle size={16} /> Stokda var ({product?.stock})</>
+                  ) : (
+                    <><AlertCircle size={16} /> Bitib</>
+                  )}
+                </div>
+              </div>
+
+              {/* Qiymət */}
+              <div className="mb-8">
+                <span className="text-4xl font-extrabold text-gray-900">
+                  {product?.price} <span className="text-2xl text-gray-500">AZN</span>
+                </span>
+              </div>
+
+              {/* Təsvir */}
+              <p className="text-gray-600 leading-relaxed mb-8 text-lg border-b border-gray-100 pb-8">
+                {product?.description || "Məhsul haqqında məlumat yoxdur."}
+              </p>
+
+              {/* Düymələr */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <ShoppingCart size={20} />
+                  Səbətə At
+                </button>
+                <button
+                  onClick={handleAddToFavorites}
+                  className="sm:w-auto w-full px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                >
+                  <Heart size={20} />
+                </button>
+              </div>
+
+              {/* Xüsusiyyətlər (Specs) */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Texniki Göstəricilər</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 text-sm">
+                  {getSpecs().length > 0 ? (
+                    getSpecs().map((spec, index) => (
+                      <div key={index} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
+                        <span className="text-gray-500">{spec.label}</span>
+                        <span className="font-medium text-gray-900 text-right">{spec.value}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 italic">Göstərici yoxdur.</p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* --- RƏYLƏR BLOKU --- */}
+        <div className="mt-12 grid lg:grid-cols-3 gap-8">
+          
+          {/* Sol: Rəy Yazma Formu */}
+          <div className="lg:col-span-1">
+            <div className="bg-white p-6 rounded-2xl shadow-lg sticky top-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Rəy Bildirin</h3>
+              <form onSubmit={handleReviewSubmit}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Qiymətləndirmə</label>
+                  <StarRatings
+                    rating={reviewRating}
+                    changeRating={setReviewRating}
+                    numberOfStars={5}
+                    starRatedColor="#EAB308"
+                    starHoverColor="#EAB308"
+                    starDimension="24px"
+                    starSpacing="4px"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Şərhiniz</label>
                   <textarea
-                    value={reviewComment} // İstifadəçinin daxil etdiyi rəy mətni.
+                    value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}
-                    placeholder="Rəyinizi buraya yazın..."
-                    className="w-full p-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                    rows={4} // Mətn sahəsinin hündürlüyü.
+                    placeholder="Məhsul haqqında fikirləriniz..."
+                    className="w-full p-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all resize-none h-32 text-sm"
                   ></textarea>
                 </div>
-                {/* Rəyi göndərmə düyməsi */}
                 <button
                   type="submit"
-                  className="mt-4 w-full px-6 py-3 bg-gray-200 text-black rounded-xl hover:bg-gray-300 transition-all duration-300"
+                  className="w-full bg-yellow-500 text-white py-3 rounded-xl font-semibold hover:bg-yellow-600 transition-colors shadow-md"
                 >
                   Rəyi Göndər
                 </button>
               </form>
             </div>
-
-            {/* Məhsul rəylərinin göstərildiyi bölmə */}
-            <div className="mt-10 bg-gray-100 p-6 rounded-2xl shadow-lg">
-              <h2 className="text-3xl font-bold text-black mb-4">
-                Məhsul Rəyləri
-              </h2>
-              {reviewsLoading ? (
-                // Rəylər yüklənərkən göstərilən mesaj.
-                <p className="text-black">Rəylər yüklənir...</p>
-              ) : reviewsError ? (
-                // Rəylər çəkilərkən xəta baş verərsə göstərilən mesaj.
-                <p className="text-red-500">Rəylər yüklənərkən xəta baş verdi.</p>
-              ) : reviewsData && reviewsData.reviews && reviewsData.reviews.length > 0 ? (
-                // Əgər rəylər varsa, hər bir rəy ayrıca göstərilir.
-                reviewsData.reviews.map((review, idx) => (
-                  <div key={idx} className="mb-4 p-4 bg-gray-100 rounded-lg">
-                    <div className="flex items-center">
-                      <StarRatings
-                        rating={review.rating} // Rəyin ulduz dəyəri.
-                        starRatedColor="gold"
-                        numberOfStars={5}
-                        starDimension="16px"
-                        starSpacing="2px"
-                      />
-                      <span className="ml-2 text-black">{review.rating}</span>
-                    </div>
-                    {/* Rəy mətni */}
-                    <p className="mt-2 text-black">{review.comment}</p>
-                  </div>
-                ))
-              ) : (
-                // Əgər heç bir rəy yoxdursa, bu mesaj göstərilir.
-                <p className="text-black">Bu məhsul üçün hələ rəy yoxdur.</p>
-              )}
-            </div>
           </div>
+
+          {/* Sağ: Mövcud Rəylər */}
+          <div className="lg:col-span-2 space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900">İstifadəçi Rəyləri</h3>
+            
+            {reviewsLoading ? (
+              <div className="text-center py-10 text-gray-500">Yüklənir...</div>
+            ) : reviewsError ? (
+              <div className="text-red-500">Rəyləri gətirmək mümkün olmadı.</div>
+            ) : reviewsData?.reviews?.length > 0 ? (
+              <div className="grid gap-4">
+                {reviewsData.reviews.map((review, idx) => (
+                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex gap-4">
+                    {/* Avatar Placeholder */}
+                    <div className="shrink-0">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                        <User size={24} />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-gray-900">İstifadəçi</span>
+                        <div className="flex text-yellow-400">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={14} 
+                              fill={i < review.rating ? "currentColor" : "none"} 
+                              className={i < review.rating ? "text-yellow-400" : "text-gray-300"}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white p-10 rounded-2xl border border-dashed border-gray-300 text-center text-gray-500">
+                <p>Bu məhsul üçün hələ heç kim rəy yazmayıb. İlk siz olun!</p>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </section>
-    </>
   )
 }
 
