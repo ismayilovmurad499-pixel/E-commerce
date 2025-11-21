@@ -22,18 +22,18 @@ const ForgotPassword = () => {
   }
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 via-blue-900 to-black">
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br ">
       <div className="w-full max-w-md p-10 bg-white/10 backdrop-blur-3xl rounded-2xl shadow-2xl border border-white/30 transform transition duration-500 hover:scale-105">
-        <h1 className="mb-6 text-4xl font-extrabold text-center text-white drop-shadow-lg">
+        <h1 className="mb-6 text-4xl font-extrabold text-center text-black">
           Forgot your password?
         </h1>
-        <p className="mb-8 text-center text-lg text-gray-200">
+        <p className="mb-8 text-center text-lg text-black-200">
           Don't fret! Just type in your email and we will send you a code to reset your password!
         </p>
 
         <form className="space-y-6" onSubmit={submitHandler}>
           <div>
-            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-100">
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-black-100">
               Your email
             </label>
             <input
@@ -44,7 +44,7 @@ const ForgotPassword = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@company.com"
               required
-              className="mt-2 w-full px-4 py-3 rounded-full bg-white/20 border border-white/40 placeholder-gray-300 text-white focus:outline-none focus:ring-4 focus:ring-indigo-500 transition duration-300"
+              className="mt-2 w-full px-4 py-3 rounded-full bg-white/60 border border-white/40  focus:outline-none focus:ring-4 focus:ring-indigo-500 transition duration-300"
             />
           </div>
 
