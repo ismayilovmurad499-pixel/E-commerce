@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node --watch app.js",
     "dev": "NODE_ENV=DEVELOPMENT nodemon app.js",                                                                                                                                                                                                                                                                                     
-    "prod": "NODE_ENV=PRODUCTION nodemon app.js"
+    "prod": "NODE_ENV=PRODUCTION nodemon app.js" 
   },
   "keywords": [
     "e-commerce",
